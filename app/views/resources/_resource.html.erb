@@ -1,0 +1,59 @@
+<% obj.each do |resource| %>
+<div class="row">
+  <div class="col-xs-8 col-xs-offset-2">    
+    <div class="well well-lg">
+      <div class="resource-name">     
+        <%= link_to resource.name, resource_path(resource) %>
+        <div class="pull-right">
+          <%= rating_for resource, 'picture' %>(<small><%= resource.calculate_average if resource.calculate_average.present?%></small>)
+        </div>
+      </div>
+      <% if logged_in? %>
+        <% if !current_user.can_download_resources? %>
+          <button type="button" disabled class="btn btn-primary">Download Image</button>
+          <p style='color: red;'> You need to upload <%= current_user.count_images_to_upload %> resources to download</p>
+        <% else %>
+          <div class="download-image">
+            <% if resource.picture.present? %>
+              <% if ['jpg', 'jpeg', 'gif', 'png'].include? resource.picture.file.extension %>
+                <%= image_tag resource.picture, style: "width: 200px; height: 200px;" %><br><br>
+                <%= link_to 'Download Image', resource.picture.url, :download =>"#{resource.name}_image", class: "btn btn-primary download resource_#{resource.id}", :data => {:id => resource.id}  %>
+              <% else %>
+                <%= File.basename(resource.picture.path)%><br><br>
+                <%= link_to 'Download file', resource.picture.url, class: "btn btn-primary" %>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+      <div class="resource-body">
+        <h6>Description: <%= truncate(resource.description, length: 100) %></h6>
+        <div class="resource-name">     
+         <h6>Resource Type: <%= resource.resource_type %></h6>
+          </div>
+            <div class="resource-meta-details">
+              <small>Created by: <%= resource.user.username if resource.user%>,
+                    <%= time_ago_in_words(resource.created_at) %> ago,
+              </small>
+            </div>
+      </div>
+    <% if logged_in? && (current_user == resource.user || current_user.admin?) %>
+      <div class="resource-actions">
+      <%= link_to "Edit this resource", edit_resource_path(resource), class: "btn btn-xs btn-primary" %>
+      <%= link_to "Delete this resource", resource_path(resource), method: :delete,
+      data: { confirm: "Are you sure you want to delete the resource?"},
+    
+        class: "btn btn-xs btn-danger" %>
+        </div>
+    <% end %>
+    </div>
+  </div>
+</div>
+
+<% end %>
+
+<script>
+  $(".download").click(function(){
+    $.get("/resources/download?id="+$(this).data("id"));
+  });
+</script>

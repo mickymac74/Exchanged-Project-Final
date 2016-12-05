@@ -1,0 +1,3 @@
+<% if !current_user.can_download_resources? %>
+	$(".download-image").html("<button type='button' disabled class='btn btn-primary'>Download Resource</button><p style='color: red;''> You need to upload <%= current_user.count_images_to_upload %> resources first before you can  download")
+<% end %>
